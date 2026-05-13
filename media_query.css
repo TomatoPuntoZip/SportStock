@@ -1,0 +1,145 @@
+@media (max-width: 767px) {
+    header {
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        padding: 0.75rem 0;
+        height: auto ;
+        min-height: 12vh;
+    }
+
+    .logo {
+        width: 18vw;
+        height: auto;
+    }
+
+    header > h1 {
+        font-size: 1.8rem;
+    }
+
+    header > i,
+    .menu {
+        font-size: 1.8rem;
+    }
+
+    .form-buscar {
+        width: 90%;
+        max-width: 520px;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .input-buscar {
+        width: 100%;
+        max-width: 320px;
+    }
+
+    .btn-buscar {
+        width: 50px;
+        height: 45px;
+    }
+
+    .form-login {
+        width: 90vw;
+        max-width: 450px;
+        min-height: auto;
+        padding: 2rem 1.2rem;
+        border-radius: 1rem;
+    }
+
+    .input-login,
+    .btn-login {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .out-login {
+        width: 90vw;
+        max-width: 450px;
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+    header {
+        height: 12vh;
+        padding: 0 1rem;
+        justify-content: space-between;
+    }
+
+    .logo {
+        width: 10vw;
+    }
+
+    header > h1 {
+        font-size: 2rem;
+    }
+
+    .form-buscar {
+        width: 45%;
+    }
+
+    .form-login {
+        width: 55vw;
+        max-width: 520px;
+        min-height: 32vh;
+    }
+
+    .input-login {
+        width: 90%;
+    }
+
+    .out-login {
+        width: 55vw;
+        max-width: 520px;
+    }
+}
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+    header {
+        height: 11vh;
+        padding: 0 2rem;
+    }
+
+    .logo {
+        width: 8vw;
+    }
+
+    header > h1 {
+        font-size: 2.4rem;
+    }
+
+    .form-buscar {
+        width: 40%;
+    }
+
+    .form-login,
+    .out-login {
+        width: 40vw;
+        max-width: 520px;
+    }
+}
+
+@media (min-width: 1440px) {
+    header {
+        padding: 0 3rem;
+    }
+
+    .logo {
+        width: 6vw;
+    }
+
+    header > h1 {
+        font-size: 2.6rem;
+    }
+
+    .form-login,
+    .out-login {
+        width: 35vw;
+        max-width: 550px;
+    }
+}

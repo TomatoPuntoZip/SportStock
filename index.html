@@ -1,0 +1,241 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SportStock - Gestor de Inventario Deportivo</title>
+    <meta name="description" content="Sistema de gestión de inventario deportivo con roles de admin y usuario">
+    <meta name="keywords" content="inventario, deportivo, admin, usuario, productos">
+    <link rel="stylesheet" href="default.css">
+</head>
+<body>
+    <div class="app-shell">
+        <header id="topbar" class="topbar hidden">
+            <div class="topbar-brand">
+                <img src="img/logo.png" alt="SportStock" class="topbar-logo" onerror="this.style.display='none'">
+                <div>
+                    <p class="brand-label">SportStock</p>
+                    <p id="topbarSubtitle" class="topbar-subtitle">Panel administrativo</p>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <span id="roleBadge" class="role-badge">ADMIN</span>
+                <button id="logoutBtn" class="btn btn-secondary btn-ghost">Cerrar sesión</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section id="loginScreen" class="screen screen-login">
+                <div class="auth-card">
+                    <div class="auth-badge">Acceso</div>
+                    <h1>Iniciar sesión</h1>
+                    <p>Ingresa con tu usuario para acceder al sistema de inventario deportivo.</p>
+                    <form id="loginForm" class="auth-form" novalidate>
+                        <label class="field-group">
+                            <span>Usuario</span>
+                            <input id="username" type="text" placeholder="Ingrese un Usuario" required>
+                        </label>
+                        <label class="field-group">
+                            <span>Contraseña</span>
+                            <input id="password" type="password" placeholder="Ingrese la Contraseña" required>
+                        </label>
+                        <p id="loginError" class="form-error" aria-live="polite"></p>
+                        <button type="submit" class="btn btn-primary btn-full">Iniciar sesión</button>
+                    </form>
+                    <div class="auth-footer">
+                        <span>Admin: admin / admin123</span>
+                        <span>Usuario: user / user123</span>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adminScreen" class="screen screen-admin hidden">
+                <aside class="sidebar">
+                    <div class="sidebar-brand">
+                        <p class="sidebar-title">Administrador</p>
+                        <p class="sidebar-subtitle">Control total</p>
+                    </div>
+                    <nav class="sidebar-nav">
+                        <button class="sidebar-link active" data-panel="adminInventory">Inventario</button>
+                        <button class="sidebar-link" data-panel="adminSettings">Configuración</button>
+                        <button class="sidebar-link" data-panel="adminProfile">Perfil</button>
+                        <button class="sidebar-link logout-link" id="sidebarLogoutBtn">Cerrar sesión</button>
+                    </nav>
+                </aside>
+                <section class="admin-view">
+                    <div id="adminInventory" class="admin-panel active">
+                        <div class="dashboard-header">
+                            <div>
+                                <span class="section-label">Administrador</span>
+                                <h2>Dashboard</h2>
+                                <p>Supervisa el inventario de equipo deportivo con acceso completo.</p>
+                            </div>
+                            <button id="openAddBtn" class="btn btn-primary">Agregar producto</button>
+                        </div>
+
+                        <div class="stats-grid">
+                            <article class="stat-card">
+                                <p class="stat-label">Total de productos</p>
+                                <h3 id="statTotal">0</h3>
+                            </article>
+                            <article class="stat-card">
+                                <p class="stat-label">Disponibles</p>
+                                <h3 id="statAvailable">0</h3>
+                            </article>
+                            <article class="stat-card">
+                                <p class="stat-label">Agotados</p>
+                                <h3 id="statOut">0</h3>
+                            </article>
+                            <article class="stat-card">
+                                <p class="stat-label">Categorías</p>
+                                <h3 id="statCategories">0</h3>
+                            </article>
+                        </div>
+
+                        <div class="section-block">
+                            <div class="section-title-row">
+                                <div>
+                                    <span class="section-label">Inventario</span>
+                                    <h3>Productos deportivos</h3>
+                                </div>
+                                <p id="inventorySummary" class="section-text">0 productos activos</p>
+                            </div>
+                            <div class="table-toolbar">
+                                <div class="search-wrapper">
+                                    <input id="adminSearchInput" type="search" placeholder="Buscar producto, categoría o estado">
+                                    <span class="search-icon">🔍</span>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="table-inventory">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre</th>
+                                            <th>Categoría</th>
+                                            <th>Cantidad</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="inventoryTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="adminSettings" class="admin-panel hidden">
+                        <div class="section-title-row">
+                            <div>
+                                <span class="section-label">Configuración</span>
+                                <h3>Preferencias del sistema</h3>
+                            </div>
+                        </div>
+                        <div class="panel-card">
+                            <p class="panel-text">Aquí puedes revisar opciones básicas del sistema, como notificaciones, permisos y datos del inventario. Esta sección es una vista simulada para el panel administrativo.</p>
+                            <ul class="settings-list">
+                                <li>Gestión de usuarios</li>
+                                <li>Notificaciones activas</li>
+                                <li>Respaldo de inventario</li>
+                                <li>Personalización de panel</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="adminProfile" class="admin-panel hidden">
+                        <div class="section-title-row">
+                            <div>
+                                <span class="section-label">Perfil</span>
+                                <h3>Información de usuario</h3>
+                            </div>
+                        </div>
+                        <div class="panel-card profile-card">
+                            <div>
+                                <p class="profile-label">Nombre</p>
+                                <p class="profile-value" id="profileName">Administrador</p>
+                            </div>
+                            <div>
+                                <p class="profile-label">Rol</p>
+                                <p class="profile-value" id="profileRole">ADMIN</p>
+                            </div>
+                            <div>
+                                <p class="profile-label">Email</p>
+                                <p class="profile-value">admin@sportstock.local</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section id="userScreen" class="screen screen-user hidden">
+                <div class="user-header">
+                    <div>
+                        <span class="section-label">Usuario</span>
+                        <h2>Catálogo de productos</h2>
+                        <p>Consulta el inventario disponible sin permisos de edición.</p>
+                    </div>
+                    <div class="search-wrapper search-simple">
+                        <input id="userSearchInput" type="search" placeholder="Buscar producto o categoría">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+                <div id="userList" class="product-grid user-grid"></div>
+                <div id="userEmpty" class="empty-state hidden">
+                    <p>No se encontraron productos.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="productModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="section-label">Producto</span>
+                    <h3 id="modalTitle">Agregar producto</h3>
+                </div>
+                <button id="closeModalBtn" class="close-btn" aria-label="Cerrar modal">×</button>
+            </div>
+            <form id="productForm" class="product-form">
+                <label class="field-group">
+                    <span>Nombre</span>
+                    <input id="productName" type="text" placeholder="Balón de fútbol" required>
+                </label>
+                <label class="field-group">
+                    <span>Categoría</span>
+                    <select id="productCategory" required>
+                        <option value="">Selecciona una categoría</option>
+                        <option value="Balones">Balones</option>
+                        <option value="Camisetas">Camisetas</option>
+                        <option value="Guayos">Guayos</option>
+                        <option value="Accesorios">Accesorios</option>
+                        <option value="Protección">Protección</option>
+                    </select>
+                </label>
+                <label class="field-group">
+                    <span>Cantidad</span>
+                    <input id="productAmount" type="number" min="0" value="1" required>
+                </label>
+                <label class="field-group">
+                    <span>Estado</span>
+                    <select id="productStatus" required>
+                        <option value="">Selecciona un estado</option>
+                        <option value="Disponible">Disponible</option>
+                        <option value="Agotado">Agotado</option>
+                        <option value="Reservado">Reservado</option>
+                    </select>
+                </label>
+                <p id="productError" class="form-error" aria-live="polite"></p>
+                <div class="modal-actions">
+                    <button type="button" id="cancelModalBtn" class="btn btn-secondary btn-ghost">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
