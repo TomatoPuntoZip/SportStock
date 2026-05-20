@@ -106,7 +106,7 @@ function loginUser(username, password) {
 
   const user = authUsers[username.toLowerCase()];
   if (!user || user.password !== password) {
-    loginError.textContent = 'Credenciales incorrectas. Usa admin/admin123 o user/user123.';
+    loginError.textContent = 'Credenciales incorrectas.';
     return;
   }
 
