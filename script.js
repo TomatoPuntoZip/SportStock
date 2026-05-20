@@ -32,31 +32,122 @@ const productError = document.getElementById('productError');
 const modalTitle = document.getElementById('modalTitle');
 const toast = document.getElementById('toast');
 
-const authUsers = {
-  admin: {
-    password: 'admin123',
-    role: 'ADMIN',
-    displayName: 'Administrador'
-  },
-  user: {
-    password: 'user123',
-    role: 'USUARIO',
-    displayName: 'Usuario estándar'
-  }
-};
+const STORAGE_KEY = 'sportstock_users';
+const PRODUCTS_KEY = 'sportstock_products';
+const SESSION_KEY = 'sportstock_session';
+const registerForm = document.getElementById('registerForm');
+const registerError = document.getElementById('registerError');
+const registerSuccess = document.getElementById('registerSuccess');
+const toggleToRegister = document.getElementById('toggleToRegister');
+const toggleToLogin = document.getElementById('toggleToLogin');
+
+const authUsers = loadUsersFromStorage();
+let products = loadProductsFromStorage();
 
 let currentRole = null;
 let currentUser = null;
 let currentProductId = null;
 let isEditing = false;
 
-const products = [
-  { id: 1, name: 'Balón de fútbol profesional', category: 'Balones', amount: 12, status: 'Disponible' },
-  { id: 2, name: 'Camiseta de entrenamiento', category: 'Camisetas', amount: 24, status: 'Reservado' },
-  { id: 3, name: 'Guayos de césped', category: 'Guayos', amount: 8, status: 'Disponible' },
-  { id: 4, name: 'Protector de espinillas', category: 'Protección', amount: 16, status: 'Agotado' },
-  { id: 5, name: 'Medias deportivas', category: 'Accesorios', amount: 40, status: 'Disponible' }
-];
+function loadUsersFromStorage() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch (error) {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+
+  const defaults = {
+    admin: {
+      username: 'admin',
+      email: 'admin@sportstock.local',
+      password: 'admin123',
+      role: 'ADMIN',
+      displayName: 'Administrador'
+    },
+    user: {
+      username: 'user',
+      email: 'user@sportstock.local',
+      password: 'user123',
+      role: 'USUARIO',
+      displayName: 'Usuario estándar'
+    }
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults));
+  return defaults;
+}
+
+function saveUsersToStorage() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(authUsers));
+}
+
+function loadProductsFromStorage() {
+  const raw = localStorage.getItem(PRODUCTS_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (error) {
+      localStorage.removeItem(PRODUCTS_KEY);
+    }
+  }
+
+  const defaults = [
+    { id: 1, name: 'Balón de fútbol profesional', category: 'Balones', amount: 12, status: 'Disponible' },
+    { id: 2, name: 'Camiseta de entrenamiento', category: 'Camisetas', amount: 24, status: 'Reservado' },
+    { id: 3, name: 'Guayos de césped', category: 'Guayos', amount: 8, status: 'Disponible' },
+    { id: 4, name: 'Protector de espinillas', category: 'Protección', amount: 16, status: 'Agotado' },
+    { id: 5, name: 'Medias deportivas', category: 'Accesorios', amount: 40, status: 'Disponible' }
+  ];
+
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(defaults));
+  return defaults;
+}
+
+function saveProductsToStorage() {
+  localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products));
+}
+
+function loadSessionFromStorage() {
+  const raw = localStorage.getItem(SESSION_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const session = JSON.parse(raw);
+    if (!session || !session.username) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+
+    const user = authUsers[session.username.toLowerCase()];
+    if (!user) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+
+    currentUser = user.displayName;
+    currentRole = user.role;
+    return session;
+  } catch (error) {
+    localStorage.removeItem(SESSION_KEY);
+    return null;
+  }
+}
+
+function saveSessionToStorage(username) {
+  localStorage.setItem(SESSION_KEY, JSON.stringify({ username: username.toLowerCase() }));
+}
+
+function clearSessionStorage() {
+  localStorage.removeItem(SESSION_KEY);
+}
 
 function showToast(message) {
   toast.textContent = message;
@@ -95,7 +186,11 @@ function resetView() {
   logoutBtn.classList.add('hidden');
   setActivePanel('adminInventory');
   loginForm.reset();
+  registerForm.reset();
   loginError.textContent = '';
+  registerError.textContent = '';
+  registerSuccess.textContent = '';
+  showLoginForm();
 }
 
 function loginUser(username, password) {
@@ -112,9 +207,88 @@ function loginUser(username, password) {
 
   currentUser = user.displayName;
   currentRole = user.role;
+  saveSessionToStorage(username);
   loginError.textContent = '';
   showToast(`Bienvenido ${currentUser}`);
   switchScreen(currentRole);
+}
+
+function registerUser(event) {
+  event.preventDefault();
+
+  const usernameField = document.getElementById('registerUsername');
+  const emailField = document.getElementById('registerEmail');
+  const passwordField = document.getElementById('registerPassword');
+  const confirmPasswordField = document.getElementById('registerConfirmPassword');
+
+  const username = usernameField.value.trim().toLowerCase();
+  const email = emailField.value.trim().toLowerCase();
+  const password = passwordField.value;
+  const confirmPassword = confirmPasswordField.value;
+
+  registerError.textContent = '';
+  registerSuccess.textContent = '';
+
+  if (!username || !email || !password || !confirmPassword) {
+    registerError.textContent = 'Completa todos los campos para registrar tu cuenta.';
+    return;
+  }
+
+  if (!email.includes('@') || !email.includes('.')) {
+    registerError.textContent = 'Ingresa un email válido.';
+    return;
+  }
+
+  if (password !== confirmPassword) {
+    registerError.textContent = 'Las contraseñas no coinciden.';
+    return;
+  }
+
+  if (authUsers[username]) {
+    registerError.textContent = 'El usuario ya existe. Elige otro nombre.';
+    return;
+  }
+
+  const emailExists = Object.values(authUsers).some((user) => user.email === email);
+  if (emailExists) {
+    registerError.textContent = 'Ese email ya está registrado.';
+    return;
+  }
+
+  const displayName = username.charAt(0).toUpperCase() + username.slice(1);
+  authUsers[username] = {
+    username,
+    email,
+    password,
+    role: 'USUARIO',
+    displayName
+  };
+
+  saveUsersToStorage();
+  registerForm.reset();
+  showToast(`Cuenta creada para ${displayName}. Inicia sesión ahora.`);
+  toggleToLogin.classList.remove('hidden');
+  toggleToRegister.classList.add('hidden');
+  showLoginForm();
+}
+
+function showRegisterForm() {
+  loginForm.classList.add('hidden');
+  registerForm.classList.remove('hidden');
+  toggleToRegister.classList.add('hidden');
+  toggleToLogin.classList.remove('hidden');
+  loginError.textContent = '';
+  registerError.textContent = '';
+  registerSuccess.textContent = '';
+}
+
+function showLoginForm() {
+  loginForm.classList.remove('hidden');
+  registerForm.classList.add('hidden');
+  toggleToRegister.classList.remove('hidden');
+  toggleToLogin.classList.add('hidden');
+  loginError.textContent = '';
+  registerError.textContent = '';
 }
 
 function getFilteredProducts(query) {
@@ -244,6 +418,7 @@ function deleteProduct(productId) {
 
   const index = products.findIndex((item) => item.id === productId);
   products.splice(index, 1);
+  saveProductsToStorage();
   renderAdminInventory();
   renderUserList();
   renderAdminStats();
@@ -272,11 +447,13 @@ function saveProduct(event) {
       product.category = category;
       product.amount = amount;
       product.status = status;
+      saveProductsToStorage();
       showToast('Producto actualizado con éxito.');
     }
   } else {
     const nextId = products.length ? Math.max(...products.map((item) => item.id)) + 1 : 1;
     products.push({ id: nextId, name, category, amount, status });
+    saveProductsToStorage();
     showToast('Producto agregado al inventario.');
   }
 
@@ -300,6 +477,7 @@ function setActivePanel(panelId) {
 function logout() {
   currentRole = null;
   currentUser = null;
+  clearSessionStorage();
   resetView();
 }
 
@@ -309,6 +487,10 @@ loginForm.addEventListener('submit', (event) => {
   const password = document.getElementById('password').value.trim();
   loginUser(username, password);
 });
+
+registerForm.addEventListener('submit', registerUser);
+toggleToRegister.addEventListener('click', showRegisterForm);
+toggleToLogin.addEventListener('click', showLoginForm);
 
 openAddBtn.addEventListener('click', () => openModal(false));
 closeModalBtn.addEventListener('click', closeModal);
@@ -330,5 +512,10 @@ sidebarLinks.forEach((link) => {
   }
 });
 
-resetView();
+if (loadSessionFromStorage()) {
+  switchScreen(currentRole);
+} else {
+  resetView();
+}
+
 renderUserList();

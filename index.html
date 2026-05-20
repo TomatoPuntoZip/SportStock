@@ -30,7 +30,11 @@
                 <div class="auth-card">
                     <div class="auth-badge">Acceso</div>
                     <h1>Iniciar sesión</h1>
-                    <p>Ingresa con tu usuario para acceder al sistema de inventario deportivo.</p>
+                    <p>Ingresa con tu usuario.</p>
+                    <div class="auth-actions">
+                        <button id="toggleToLogin" type="button" class="btn btn-link hidden">¿Ya tienes cuenta? Inicia sesión</button>
+                        <button id="toggleToRegister" type="button" class="btn btn-link">¿No tienes cuenta? Regístrate</button>
+                    </div>
                     <form id="loginForm" class="auth-form" novalidate>
                         <label class="field-group">
                             <span>Usuario</span>
@@ -42,6 +46,27 @@
                         </label>
                         <p id="loginError" class="form-error" aria-live="polite"></p>
                         <button type="submit" class="btn btn-primary btn-full">Iniciar sesión</button>
+                    </form>
+                    <form id="registerForm" class="auth-form hidden" novalidate>
+                        <label class="field-group">
+                            <span>Usuario</span>
+                            <input id="registerUsername" type="text" placeholder="Nuevo usuario" required>
+                        </label>
+                        <label class="field-group">
+                            <span>Email</span>
+                            <input id="registerEmail" type="email" placeholder="ejemplo@dominio.com" required>
+                        </label>
+                        <label class="field-group">
+                            <span>Contraseña</span>
+                            <input id="registerPassword" type="password" placeholder="Crea una contraseña" required>
+                        </label>
+                        <label class="field-group">
+                            <span>Confirmar contraseña</span>
+                            <input id="registerConfirmPassword" type="password" placeholder="Repite la contraseña" required>
+                        </label>
+                        <p id="registerError" class="form-error" aria-live="polite"></p>
+                        <p id="registerSuccess" class="form-success" aria-live="polite"></p>
+                        <button type="submit" class="btn btn-primary btn-full">Crear cuenta</button>
                     </form>
                 </div>
             </section>
@@ -168,7 +193,7 @@
                     <div>
                         <span class="section-label">Usuario</span>
                         <h2>Catálogo de productos</h2>
-                        <p>Consulta el inventario disponible sin permisos de edición.</p>
+                        <p>Consulta el inventario.</p>
                     </div>
                     <div class="search-wrapper search-simple">
                         <input id="userSearchInput" type="search" placeholder="Buscar producto o categoría">
