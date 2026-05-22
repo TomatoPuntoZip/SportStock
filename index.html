@@ -114,6 +114,10 @@
                             </article>
                         </div>
 
+                        <div id="adminNotification" class="admin-notification hidden">
+                            <p id="notificationText"></p>
+                        </div>
+
                         <div class="section-block">
                             <div class="section-title-row">
                                 <div>
@@ -140,6 +144,30 @@
                                         </tr>
                                     </thead>
                                     <tbody id="inventoryTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="section-block">
+                            <div class="section-title-row">
+                                <div>
+                                    <span class="section-label">Solicitudes</span>
+                                    <h3>Alquileres pendientes</h3>
+                                </div>
+                                <p id="requestSummary" class="section-text">0 solicitudes pendientes</p>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="table-inventory">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Usuario</th>
+                                            <th>Cantidad</th>
+                                            <th>Estado</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requestTableBody"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -195,9 +223,33 @@
                         <h2>Catálogo de productos</h2>
                         <p>Consulta el inventario.</p>
                     </div>
-                    <div class="search-wrapper search-simple">
-                        <input id="userSearchInput" type="search" placeholder="Buscar producto o categoría">
-                        <span class="search-icon">🔍</span>
+                    <div class="user-header-actions">
+                        <button id="toggleUserInventoryBtn" class="btn btn-secondary">Mi inventario</button>
+                        <div class="search-wrapper search-simple">
+                            <input id="userSearchInput" type="search" placeholder="Buscar producto o categoría">
+                            <span class="search-icon">🔍</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="userInventorySection" class="section-block hidden">
+                    <div class="section-title-row">
+                        <div>
+                            <span class="section-label">Mi inventario</span>
+                            <h3>Objetos alquilados</h3>
+                        </div>
+                        <p id="userInventorySummary" class="section-text">0 objetos alquilados</p>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="table-inventory">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Estado del alquiler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userInventoryTableBody"></tbody>
+                        </table>
                     </div>
                 </div>
                 <div id="userList" class="product-grid user-grid"></div>
@@ -252,6 +304,24 @@
                     <button type="submit" class="btn btn-primary">Guardar producto</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div id="requestConfirmModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="requestConfirmTitle">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div>
+                    <span class="section-label">Solicitud enviada</span>
+                    <h3 id="requestConfirmTitle">Alquiler solicitado</h3>
+                </div>
+                <button id="closeRequestConfirmBtn" class="close-btn" aria-label="Cerrar modal">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="requestConfirmMessage">Tu solicitud ha sido enviada al administrador.</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="closeRequestConfirmActionBtn" class="btn btn-primary">Cerrar</button>
+            </div>
         </div>
     </div>
 

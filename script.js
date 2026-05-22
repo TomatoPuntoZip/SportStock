@@ -18,6 +18,10 @@ const inventorySummary = document.getElementById('inventorySummary');
 const inventoryTableBody = document.getElementById('inventoryTableBody');
 const userList = document.getElementById('userList');
 const userEmpty = document.getElementById('userEmpty');
+const userInventorySection = document.getElementById('userInventorySection');
+const userInventoryTableBody = document.getElementById('userInventoryTableBody');
+const userInventorySummary = document.getElementById('userInventorySummary');
+const toggleUserInventoryBtn = document.getElementById('toggleUserInventoryBtn');
 const profileName = document.getElementById('profileName');
 const profileRole = document.getElementById('profileRole');
 const productModal = document.getElementById('productModal');
@@ -35,17 +39,28 @@ const toast = document.getElementById('toast');
 const STORAGE_KEY = 'sportstock_users';
 const PRODUCTS_KEY = 'sportstock_products';
 const SESSION_KEY = 'sportstock_session';
+const REQUESTS_KEY = 'sportstock_requests';
 const registerForm = document.getElementById('registerForm');
 const registerError = document.getElementById('registerError');
 const registerSuccess = document.getElementById('registerSuccess');
 const toggleToRegister = document.getElementById('toggleToRegister');
 const toggleToLogin = document.getElementById('toggleToLogin');
+const adminNotification = document.getElementById('adminNotification');
+const notificationText = document.getElementById('notificationText');
+const requestTableBody = document.getElementById('requestTableBody');
+const requestSummary = document.getElementById('requestSummary');
+const requestConfirmModal = document.getElementById('requestConfirmModal');
+const requestConfirmMessage = document.getElementById('requestConfirmMessage');
+const closeRequestConfirmBtn = document.getElementById('closeRequestConfirmBtn');
+const closeRequestConfirmActionBtn = document.getElementById('closeRequestConfirmActionBtn');
 
 const authUsers = loadUsersFromStorage();
 let products = loadProductsFromStorage();
+let rentalRequests = loadRequestsFromStorage();
 
 let currentRole = null;
 let currentUser = null;
+let currentUsername = null;
 let currentProductId = null;
 let isEditing = false;
 
@@ -133,6 +148,7 @@ function loadSessionFromStorage() {
     }
 
     currentUser = user.displayName;
+    currentUsername = user.username;
     currentRole = user.role;
     return session;
   } catch (error) {
@@ -155,6 +171,163 @@ function showToast(message) {
   setTimeout(() => toast.classList.remove('show'), 2600);
 }
 
+function loadRequestsFromStorage() {
+  const raw = localStorage.getItem(REQUESTS_KEY);
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+    } catch (error) {
+      localStorage.removeItem(REQUESTS_KEY);
+    }
+  }
+
+  localStorage.setItem(REQUESTS_KEY, JSON.stringify([]));
+  return [];
+}
+
+function saveRequestsToStorage() {
+  localStorage.setItem(REQUESTS_KEY, JSON.stringify(rentalRequests));
+}
+
+function getPendingRequests() {
+  return rentalRequests.filter((request) => request.status === 'Pendiente');
+}
+
+function getProductPendingRequest(productId) {
+  return rentalRequests.find((request) => request.productId === productId && request.username === currentUsername && request.status === 'Pendiente');
+}
+
+function renderAdminNotification() {
+  const pendingCount = getPendingRequests().length;
+  if (pendingCount > 0) {
+    adminNotification.classList.remove('hidden');
+    notificationText.textContent = `Hay ${pendingCount} solicitud${pendingCount === 1 ? '' : 'es'} de alquiler pendiente${pendingCount === 1 ? '' : 's'}. Revisa la tabla de solicitudes.`;
+  } else {
+    adminNotification.classList.add('hidden');
+    notificationText.textContent = '';
+  }
+}
+
+function renderAdminRequests() {
+  requestTableBody.innerHTML = '';
+  if (rentalRequests.length === 0) {
+    requestTableBody.innerHTML = '<tr><td colspan="5" class="empty-row">No hay solicitudes de alquiler.</td></tr>';
+  } else {
+    rentalRequests.forEach((request) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${request.productName}</td>
+        <td>${request.displayName}</td>
+        <td>${request.amount}</td>
+        <td>${request.status}</td>
+        <td>
+          <div class="table-actions">
+            ${request.status === 'Pendiente' ? `
+              <button class="btn btn-primary" data-action="approve" data-id="${request.id}">Aprobar</button>
+              <button class="btn btn-secondary" data-action="reject" data-id="${request.id}">Rechazar</button>
+            ` : '<span class="status-label">--</span>'}
+          </div>
+        </td>
+      `;
+
+      const approveBtn = row.querySelector('[data-action="approve"]');
+      const rejectBtn = row.querySelector('[data-action="reject"]');
+
+      if (approveBtn) {
+        approveBtn.addEventListener('click', () => approveRentalRequest(request.id));
+      }
+      if (rejectBtn) {
+        rejectBtn.addEventListener('click', () => rejectRentalRequest(request.id));
+      }
+
+      requestTableBody.appendChild(row);
+    });
+  }
+
+  const pendingCount = getPendingRequests().length;
+  requestSummary.textContent = `${pendingCount} solicitud${pendingCount === 1 ? '' : 'es'} pendiente${pendingCount === 1 ? '' : 's'}`;
+  renderAdminNotification();
+}
+
+function openRentRequest(productId) {
+  const product = products.find((item) => item.id === productId);
+  if (!product || product.status !== 'Disponible' || product.amount === 0) {
+    showToast('Este producto no está disponible para alquilar.');
+    return;
+  }
+
+  if (!currentUsername) {
+    showToast('Debes iniciar sesión para solicitar un alquiler.');
+    return;
+  }
+
+  if (getProductPendingRequest(productId)) {
+    showToast('Ya tienes una solicitud pendiente para este producto.');
+    return;
+  }
+
+  const nextId = rentalRequests.length ? Math.max(...rentalRequests.map((request) => request.id)) + 1 : 1;
+  rentalRequests.push({
+    id: nextId,
+    productId: product.id,
+    productName: product.name,
+    username: currentUsername,
+    displayName: currentUser,
+    amount: 1,
+    status: 'Pendiente',
+    createdAt: new Date().toISOString()
+  });
+
+  saveRequestsToStorage();
+  openConfirmationModal('Tu solicitud de alquiler ha sido enviada correctamente. El administrador revisará la solicitud.');
+  renderUserList();
+  if (currentRole === 'ADMIN') {
+    renderAdminRequests();
+  }
+}
+
+function approveRentalRequest(requestId) {
+  const request = rentalRequests.find((item) => item.id === requestId);
+  if (!request) return;
+
+  const product = products.find((item) => item.id === request.productId);
+  if (!product || product.amount === 0) {
+    request.status = 'Rechazado';
+    saveRequestsToStorage();
+    showToast('No se puede aprobar. El producto ya no está disponible.');
+    renderAdminRequests();
+    return;
+  }
+
+  product.amount -= request.amount;
+  if (product.amount <= 0) {
+    product.amount = 0;
+    product.status = 'Agotado';
+  }
+
+  request.status = 'Aprobado';
+  saveProductsToStorage();
+  saveRequestsToStorage();
+  showToast(`Solicitud aprobada. ${product.name} se ha reservado.`);
+  renderAdminInventory();
+  renderAdminRequests();
+  renderAdminStats();
+  renderUserList();
+}
+
+function rejectRentalRequest(requestId) {
+  const request = rentalRequests.find((item) => item.id === requestId);
+  if (!request) return;
+
+  request.status = 'Rechazado';
+  saveRequestsToStorage();
+  showToast('Solicitud rechazada con éxito.');
+  renderAdminRequests();
+}
+
 function switchScreen(role) {
   loginScreen.classList.add('hidden');
   topbar.classList.remove('hidden');
@@ -169,6 +342,7 @@ function switchScreen(role) {
     profileRole.textContent = 'ADMIN';
     renderAdminInventory();
     renderAdminStats();
+    renderAdminRequests();
   } else {
     adminScreen.classList.add('hidden');
     userScreen.classList.remove('hidden');
@@ -206,6 +380,7 @@ function loginUser(username, password) {
   }
 
   currentUser = user.displayName;
+  currentUsername = user.username;
   currentRole = user.role;
   saveSessionToStorage(username);
   loginError.textContent = '';
@@ -356,12 +531,15 @@ function renderUserList() {
 
   if (filtered.length === 0) {
     userEmpty.classList.remove('hidden');
+    renderUserInventory();
     return;
   }
 
   userEmpty.classList.add('hidden');
 
   filtered.forEach((product) => {
+    const isAvailable = product.status === 'Disponible' && product.amount > 0;
+    const hasPendingRequest = currentUsername && getProductPendingRequest(product.id);
     const card = document.createElement('article');
     card.className = 'product-card';
     card.innerHTML = `
@@ -374,10 +552,60 @@ function renderUserList() {
         <span>Estado <strong>${product.status}</strong></span>
       </div>
       <p>Consulta rápida para ver disponibilidad y categoría del producto.</p>
+      <div class="product-actions">
+        <button class="btn btn-primary" data-rent-id="${product.id}" ${!isAvailable || hasPendingRequest ? 'disabled' : ''}>
+          ${hasPendingRequest ? 'Solicitud pendiente' : isAvailable ? 'Solicitar alquiler' : 'No disponible'}
+        </button>
+      </div>
     `;
 
     userList.appendChild(card);
   });
+
+  renderUserInventory();
+}
+
+function renderUserInventory() {
+  if (!currentUsername) {
+    userInventorySection.classList.add('hidden');
+    return;
+  }
+
+  const approvedRentals = rentalRequests.filter(
+    (request) => request.username === currentUsername && request.status === 'Aprobado'
+  );
+
+  userInventorySection.classList.remove('hidden');
+  userInventoryTableBody.innerHTML = '';
+
+  if (approvedRentals.length === 0) {
+    userInventoryTableBody.innerHTML = '<tr><td colspan="3" class="empty-row">No tienes objetos alquilados aprobados.</td></tr>';
+  } else {
+    approvedRentals.forEach((request) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${request.productName}</td>
+        <td>${request.amount}</td>
+        <td>${request.status}</td>
+      `;
+      userInventoryTableBody.appendChild(row);
+    });
+  }
+
+  userInventorySummary.textContent = `${approvedRentals.length} objeto${approvedRentals.length === 1 ? '' : 's'} alquilado${approvedRentals.length === 1 ? '' : 's'}`;
+}
+
+function toggleUserInventory() {
+  const isHidden = userInventorySection.classList.contains('hidden');
+  if (isHidden) {
+    renderUserInventory();
+    userInventorySection.classList.remove('hidden');
+    toggleUserInventoryBtn.textContent = 'Ocultar inventario';
+    userInventorySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    userInventorySection.classList.add('hidden');
+    toggleUserInventoryBtn.textContent = 'Mi inventario';
+  }
 }
 
 function openModal(edit = false, productId = null) {
@@ -477,6 +705,7 @@ function setActivePanel(panelId) {
 function logout() {
   currentRole = null;
   currentUser = null;
+  currentUsername = null;
   clearSessionStorage();
   resetView();
 }
@@ -503,6 +732,20 @@ productModal.addEventListener('click', (event) => {
 productForm.addEventListener('submit', saveProduct);
 adminSearchInput.addEventListener('input', renderAdminInventory);
 userSearchInput.addEventListener('input', renderUserList);
+toggleUserInventoryBtn.addEventListener('click', toggleUserInventory);
+userList.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-rent-id]');
+  if (!button) return;
+  const productId = Number(button.dataset.rentId);
+  openRentRequest(productId);
+});
+requestConfirmModal.addEventListener('click', (event) => {
+  if (event.target === requestConfirmModal) {
+    requestConfirmModal.classList.add('hidden');
+  }
+});
+closeRequestConfirmBtn.addEventListener('click', () => requestConfirmModal.classList.add('hidden'));
+closeRequestConfirmActionBtn.addEventListener('click', () => requestConfirmModal.classList.add('hidden'));
 logoutBtn.addEventListener('click', logout);
 sidebarLogoutBtn.addEventListener('click', logout);
 
