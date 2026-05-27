@@ -76,6 +76,8 @@ button { border: none; cursor: pointer; }
   backdrop-filter: blur(24px);
   box-shadow: var(--shadow-sm);
   animation: slideDown 0.4s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  z-index: 100;
 }
 
 @keyframes slideDown {
@@ -86,12 +88,12 @@ button { border: none; cursor: pointer; }
 .topbar-brand { display: flex; align-items: center; gap: 0.875rem; }
 
 .topbar-logo {
-  width: 40px; height: 40px;
+  width: 52px; height: 52px;
   object-fit: contain;
   border-radius: var(--radius-md);
   background: rgba(0,212,255,0.08);
   border: 1px solid rgba(0,212,255,0.15);
-  padding: 0.5rem;
+  padding: 0.4rem;
 }
 
 .brand-label {
@@ -963,4 +965,106 @@ button { border: none; cursor: pointer; }
   .filter-tabs { gap: 0.25rem; }
   .filter-tab  { font-size: 0.73rem; padding: 0.35rem 0.65rem; }
   .field-row-2 { grid-template-columns: 1fr; }
+}
+
+/* ─── Campanita ───────────────────────────────────────────────────────────── */
+.bell-wrapper {
+    position: relative;
+}
+.bell-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 0.5rem 0.85rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s;
+    color: var(--text);
+}
+.bell-btn:hover,
+.bell-btn.bell-has-notifications {
+    background: rgba(30,216,162,0.14);
+    border-color: rgba(30,216,162,0.4);
+}
+.bell-count {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    background: #ff5c5c;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+}
+.bell-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 300px;
+    background: rgba(8, 20, 45, 0.98);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    z-index: 200;
+    overflow: hidden;
+    animation: modalIn 0.2s ease;
+}
+.bell-dropdown-header {
+    padding: 0.9rem 1.2rem 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.bell-list {
+    list-style: none;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.bell-list li {
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+.bell-list li span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    margin-top: 0.15rem;
+}
+.bell-list .empty-bell {
+    color: var(--text-muted);
+    text-align: center;
+    padding: 1.5rem;
+}
+.bell-dropdown-footer {
+    padding: 0.7rem 1.2rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+}
+
+/* ─── Badge sidebar ───────────────────────────────────────────────────────── */
+.sidebar-badge {
+    margin-left: auto;
+    background: #ff5c5c;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 800;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
 }

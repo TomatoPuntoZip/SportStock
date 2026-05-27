@@ -24,6 +24,19 @@
       </div>
     </div>
     <div class="topbar-actions">
+      <div id="bellWrapper" class="bell-wrapper hidden">
+        <button id="bellBtn" class="bell-btn" aria-label="Notificaciones">
+          🔔
+          <span id="bellCount" class="bell-count hidden">0</span>
+        </button>
+        <div id="bellDropdown" class="bell-dropdown hidden">
+          <div class="bell-dropdown-header">Solicitudes pendientes</div>
+          <ul id="bellList" class="bell-list"></ul>
+          <div class="bell-dropdown-footer">
+            <button id="bellViewAll" class="btn btn-link">Ver todas las solicitudes</button>
+          </div>
+        </div>
+      </div>
       <span id="roleBadge" class="role-badge">ADMIN</span>
       <button id="logoutBtn" class="btn btn-ghost">Cerrar sesión</button>
     </div>
@@ -84,9 +97,8 @@
         </div>
         <nav class="sidebar-nav">
           <button class="sidebar-link active" data-panel="adminInventory">Inventario</button>
-          <button class="sidebar-link" data-panel="adminRentals">Alquileres</button>
+          <button class="sidebar-link" data-panel="adminRentals">Alquileres <span id="sidebarBadge" class="sidebar-badge hidden">0</span></button>
           <button class="sidebar-link" data-panel="adminUsers">Usuarios</button>
-          <button class="sidebar-link" data-panel="adminSettings">Configuración</button>
           <button class="sidebar-link" data-panel="adminProfile">Perfil</button>
           <button class="sidebar-link logout-link" id="sidebarLogoutBtn">Cerrar sesión</button>
         </nav>
@@ -263,25 +275,6 @@
                 <tbody id="usersTableBody"></tbody>
               </table>
             </div>
-          </div>
-        </div>
-
-        <!-- Panel: Configuración -->
-        <div id="adminSettings" class="admin-panel hidden">
-          <div class="section-title-row">
-            <div>
-              <span class="section-label">Configuración</span>
-              <h3>Preferencias del sistema</h3>
-            </div>
-          </div>
-          <div class="panel-card">
-            <p class="panel-text">Sistema de configuración en proceso.</p>
-            <ul class="settings-list">
-              <li>Gestión de usuarios</li>
-              <li>Notificaciones activas</li>
-              <li>Respaldo de inventario</li>
-              <li>Personalización de panel</li>
-            </ul>
           </div>
         </div>
 

@@ -225,14 +225,17 @@ function switchScreen(role) {
     roleBadge.textContent = 'ADMIN';
     profileName.textContent = currentUser;
     profileRole.textContent = 'ADMIN';
+    bellWrapper.classList.remove('hidden');
     renderAdminInventory();
     renderAdminStats();
     renderAdminRentals();
+    updateBellNotifications();
   } else {
     adminScreen.classList.add('hidden');
     userScreen.classList.remove('hidden');
     topbarSubtitle.textContent = 'Vista de usuario';
     roleBadge.textContent = 'USUARIO';
+    bellWrapper.classList.add('hidden');
     renderUserList();
     renderUserHistory();
   }
@@ -440,6 +443,7 @@ function approveRentalRequest(requestId) {
   showToast(`Solicitud aprobada: ${product.name}`, 'success');
   closeReviewModal();
   renderAdminInventory(); renderAdminRentals(); renderAdminStats();
+  updateBellNotifications();
 }
 
 function rejectRentalRequest(requestId) {
@@ -452,6 +456,7 @@ function rejectRentalRequest(requestId) {
   showToast('Solicitud rechazada.', 'error');
   closeReviewModal();
   renderAdminRentals();
+  updateBellNotifications();
 }
 
 function markReturned(requestId) {
@@ -469,6 +474,7 @@ function markReturned(requestId) {
   saveRequestsToStorage();
   showToast(`Devolución registrada: ${req.productName}`, 'success');
   renderAdminRentals(); renderAdminInventory(); renderAdminStats();
+  updateBellNotifications();
 }
 
 // ─── Admin: Users ─────────────────────────────────────────────────────────────
@@ -759,6 +765,52 @@ logoutBtn.addEventListener('click', logout);
 sidebarLogoutBtn.addEventListener('click', logout);
 exportCsvBtn.addEventListener('click', exportCsv);
 toggleUserHistoryBtn.addEventListener('click', toggleUserHistory);
+
+// ─── Bell notification ────────────────────────────────────────────────────────
+const bellWrapper  = document.getElementById('bellWrapper');
+const bellBtn      = document.getElementById('bellBtn');
+const bellCount    = document.getElementById('bellCount');
+const bellDropdown = document.getElementById('bellDropdown');
+const bellList     = document.getElementById('bellList');
+const bellViewAll  = document.getElementById('bellViewAll');
+const sidebarBadge = document.getElementById('sidebarBadge');
+
+function updateBellNotifications() {
+  const pending = getPendingRequests();
+  const count   = pending.length;
+
+  // Badge sidebar
+  sidebarBadge.textContent = count;
+  sidebarBadge.classList.toggle('hidden', count === 0);
+
+  // Campanita topbar
+  bellCount.textContent = count;
+  bellCount.classList.toggle('hidden', count === 0);
+  bellBtn.classList.toggle('bell-has-notifications', count > 0);
+
+  // Lista del dropdown
+  bellList.innerHTML = count === 0
+    ? '<li class="empty-bell">Sin solicitudes pendientes</li>'
+    : pending.slice(0, 5).map(r => `
+        <li>
+          <strong>${r.productName}</strong> — ${r.amount} unid.
+          <span>${r.displayName} · ${timeSince(r.createdAt)}</span>
+        </li>`).join('') + (pending.length > 5 ? `<li style="text-align:center;color:var(--text-muted);font-size:0.82rem;">+${pending.length - 5} más...</li>` : '');
+}
+
+bellBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  bellDropdown.classList.toggle('hidden');
+});
+
+bellViewAll.addEventListener('click', () => {
+  bellDropdown.classList.add('hidden');
+  setActivePanel('adminRentals');
+});
+
+document.addEventListener('click', e => {
+  if (!bellWrapper.contains(e.target)) bellDropdown.classList.add('hidden');
+});
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 if (loadSessionFromStorage()) { switchScreen(currentRole); } else { resetView(); }
