@@ -301,7 +301,7 @@ function registerUser(event) {
 
 function showRegisterForm() {
   loginForm.classList.add('hidden'); registerForm.classList.remove('hidden');
-  loginError.textContent = registerError.textContent = registerSuccess.textContent = '';
+  loginError.textContent = registerACError.textContent = registerSuccess.textContent = '';
   document.getElementById('authTitle').textContent    = 'Crear cuenta';
   document.getElementById('authSubtitle').textContent = 'Completa los datos para registrarte.';
 }
